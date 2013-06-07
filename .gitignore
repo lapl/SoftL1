@@ -4,3 +4,5 @@
 out
 *.o
 Q3
+Q2
+parser
