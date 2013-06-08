@@ -32,7 +32,7 @@ imprime:
 	inc edi
 	cmp byte[ecx+edi], 0
 	jnz imprime
-	jz final
+	jmp final
 
 final:
 	mov eax, 1 

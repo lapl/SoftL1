@@ -8,102 +8,83 @@ stdout          equ     1
 stderr          equ     3
 
 	SECTION .data
-
-debug:	db 10
-debug_len:	equ $-debug
-resultado:	db'Resultado: '
-res_len:	equ $-resultado
-resto:	db'Resto: '
-resto_len:	equ $-resto
 	
+igual:	db'Igual'
+igual_len:	equ $-igual
+maior:	db'Maior'
+maior_len:	equ $-maior
+menor:	db'Menor'
+menor_len:	equ $-menor
+
 	SECTION .bss
 
 num:	resb 5
 string:	resb 5
-a:	resb 5
-b:	resb 5
-op:	resb 5
-	
-	
+a: resb 5
+b: resb 5
+c: resb 5
+
 	SECTION .text
 
-	global _start
+	global _start:
 
 _start:
-
 	call read
 	call strToInt
-	mov [a],edx
-
+	mov [a], edx
 	call read
 	call strToInt
-	mov [b],edx
-	
+	mov [b], edx
 	call read
-
-	mov al,[num]
-
-	xor ebx,ebx
-	xor ecx,ecx
-	mov ebx,[a]
-	mov ecx,[b]
+	call strToInt
+	mov [c], edx
 	
-	cmp eax, '+'
-	jnz sub
-	add ebx,ecx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	
-	jmp final
-sub:
-	cmp eax,'-'
-	jnz mult
-	mov edx,ecx
-	sub ebx,ecx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	jmp final
-
-mult:
-	cmp eax,'*'
-	jnz div
-	imul ebx,ecx
-	mov edx,ebx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	jmp final
-
-div:
-	xor eax,eax
-	mov eax,ebx
+	xor ebx, ebx
+	mov ebx, [a]
+	xor ecx, ecx
+	mov ecx, [b]
 	xor edx, edx
-	idiv ecx
-	mov [a],edx		;resto em a
-	mov [b],eax		;resposta
-	call res
-	mov edx,[b]
-	call imprimeInt
-	call dbg
-	call rest
-	mov edx,[a]
-	call imprimeInt
-	jmp final
+	mov edx, [c]
+	add ebx, ecx
+	cmp ebx, edx
+	je foi_igual
+	jl foi_menor
+	mov eax, sys_write
+	mov ebx, stdout
+	mov ecx, maior
+	mov edx, maior_len
+	int 0x80
+	xor eax,eax
+	jz final
+	
+foi_igual:
+	mov eax, sys_write
+	mov ebx, stdout
+	mov ecx, igual
+	mov edx, igual_len
+	int 0x80
+	xor eax,eax
+	jz final
+ret
+	
+foi_menor:
+	mov eax, sys_write
+	mov ebx, stdout
+	mov ecx, menor
+	mov edx, menor_len
+	int 0x80
+	xor eax,eax
+	jz final
+ret
 
 read:
-	xor ecx, ecx
 	mov eax, sys_read
 	mov ebx, stdin
 	mov ecx, num
 	mov edx, 6
 	int 0x80
 ret
-
+	
 strToInt:
 	xor ebx,ebx
 	xor esi,esi
@@ -112,7 +93,6 @@ strToInt:
 	dec ebx
 	mov esi, ebx		;tamanho
 	mov ecx,1		;1,10,100
-
 	
 loopstrToInt:
 	dec ebx
@@ -155,30 +135,6 @@ loopIntToStr2:
 	dec esi
 	cmp esi,0
 	jne loopIntToStr2
-ret
-
-dbg:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,debug
-	mov edx,debug_len
-	int 0x80
-ret
-
-res:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,resultado
-	mov edx, res_len
-	int 0x80
-ret
-
-rest:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,resto
-	mov edx, resto_len
-	int 0x80
 ret
 	
 final:

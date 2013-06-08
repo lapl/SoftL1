@@ -8,178 +8,113 @@ stdout          equ     1
 stderr          equ     3
 
 	SECTION .data
-
-debug:	db 10
-debug_len:	equ $-debug
-resultado:	db'Resultado: '
-res_len:	equ $-resultado
-resto:	db'Resto: '
-resto_len:	equ $-resto
 	
+igual:	db'Igual'
+igual_len:	equ $-igual
+maior:	db'Maior'
+maior_len:	equ $-maior
+menor:	db'Menor'
+menor_len:	equ $-menor
+
 	SECTION .bss
 
 num:	resb 5
 string:	resb 5
-a:	resb 5
-b:	resb 5
-op:	resb 5
-	
-	
+a: resb 5
+b: resb 5
+c: resb 5
+
 	SECTION .text
 
-	global _start
+	global _start:
 
 _start:
-	;; le entrada
-
 	call read
 	call strToInt
-	mov [a],edx
-
-	call read
-	call strToInt
-	mov [b],edx
-	
-	call read
-
-	mov al,[num]
-
-	xor ebx,ebx
-	xor ecx,ecx
-	mov ebx,[a]
-	mov ecx,[b]
-	
-	cmp eax, '+'
-	jnz sub
-	add ebx,ecx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	
-	jz final
-sub:
-	cmp eax,'-'
-	jnz mult
-	mov edx,ecx
-	sub ebx,ecx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	jz final
-
-mult:
-	cmp eax,'*'
-	jnz div
-	imul ebx,ecx
-	mov edx,ebx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	jz final
-
-div:
-	xor eax,eax
-	mov eax,ebx
+	xor ebx, ebx
+	mov ebx, [a]
+	xor ecx, ecx
+	mov ecx, [b]
 	xor edx, edx
-	idiv ecx
-	mov [a],edx		;resto em a
-	mov [b],eax		;resposta
-	call res
-	mov edx,[b]
-	call imprimeInt
-	call dbg
-	call rest
-	mov edx,[a]
-	call imprimeInt
-	jz final
+	mov edx, [c]
+	add ebx, ecx
+	cmp ebx, edx
+	je foi_igual
+	jl foi_menor
+	mov eax, sys_write
+	mov ebx, stdout
+	mov ecx, maior
+	mov edx, maior_len
+	int 0X80
+	jmp final
+	
+foi_igual:
+	mov eax, sys_write
+	mov ebx, stdout
+	mov ecx, igual
+	mov edx, igual_len
+	int 0X80
+	jmp final
+	
+foi_menor:
+	mov eax, sys_write
+	mov ebx, stdout
+	mov ecx, menor
+	mov edx, menor_len
+	int 0X80
+	jmp final
 
 read:
-	xor ecx, ecx
 	mov eax, sys_read
 	mov ebx, stdin
 	mov ecx, num
 	mov edx, 6
 	int 0x80
 ret
-
+	
 strToInt:
-	xor ebx,ebx
-	xor esi,esi
-	xor edx,edx
-	mov ebx,eax
-	dec ebx
-	mov esi, ebx		;tamanho
-	mov ecx,1		;1,10,100
-
+	mov esi, 0
+	xor ebx, ebx
+	xor eax, eax
+	call loopstrToInt1
+	xor edx, edx
+	mov ecx, 1
+	call loopstrToInt2
+	mov [a], edx
+	inc ebx
+	call loopstrToInt1
+	xor edx, edx
+	mov ecx, 1
+	call loopstrToInt2
+	mov [b], edx
+	inc ebx
+	call loopstrToInt1
+	xor edx, edx
+	mov ecx, 1
+	call loopstrToInt2
+	mov [c], edx
+ret
 	
-loopstrToInt:
-	dec ebx
+loopstrToInt1:
 	mov al, [num+ebx]
-	sub eax,'0'
-	imul eax,ecx
-	add edx,eax
-	imul ecx,10
-	dec esi
-	cmp esi,0
-	jne loopstrToInt
-ret
-
-imprimeInt:
-	mov eax,edx		;guarda o inteiro
-	xor esi,esi 		;tamanho
-
-loopIntToStr1:
-	mov ecx,10		;divisor
-	xor edx,edx		;resto
-	idiv ecx		;eax = eax/ecx, edx = eax%ecx
-	push edx
+	cmp eax, 40
+	jl acaba
+	sub eax, '0'
+	push eax
 	inc esi
-	cmp eax,0
-	jne loopIntToStr1
+	inc ebx
+	jmp loopstrToInt1
+	acaba:
+ret
 
-loopIntToStr2:
-	xor eax,eax
+loopstrToInt2:
 	pop eax
-	add eax,'0'
-	mov [string], eax
-
-	;; imprime
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx, string
-	mov edx, 1
-	int 0x80
-	
+	imul eax, ecx
+	add edx, eax
+	imul ecx, 10
 	dec esi
-	cmp esi,0
-	jne loopIntToStr2
-ret
-
-dbg:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,debug
-	mov edx,debug_len
-	int 0x80
-ret
-
-res:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,resultado
-	mov edx, res_len
-	int 0x80
-ret
-
-rest:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,resto
-	mov edx, resto_len
-	int 0x80
+	cmp esi, 0
+	jne loopstrToInt2
 ret
 	
 final:

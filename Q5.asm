@@ -9,92 +9,67 @@ stderr          equ     3
 
 	SECTION .data
 
-debug:	db 10
-debug_len:	equ $-debug
-resultado:	db'Resultado: '
-res_len:	equ $-resultado
-resto:	db'Resto: '
-resto_len:	equ $-resto
+primo:	db'Primo',10
+primo_len:	equ $-primo
+notprimo:	db'Nao primo',10
+notprimo_len:	equ $-notprimo
 	
 	SECTION .bss
 
 num:	resb 5
 string:	resb 5
 a:	resb 5
-b:	resb 5
-op:	resb 5
-	
-	
+
 	SECTION .text
 
 	global _start
 
 _start:
-
 	call read
 	call strToInt
 	mov [a],edx
 
-	call read
-	call strToInt
-	mov [b],edx
+	cmp edx,0
+	je notPrime
+	cmp edx,1
+	je notPrime
 	
-	call read
+	mov esi, 2
 
-	mov al,[num]
+loop:
+	mov ecx,esi
+	imul ecx,ecx
+	cmp ecx,[a]
+	jg prime
 
-	xor ebx,ebx
-	xor ecx,ecx
-	mov ebx,[a]
-	mov ecx,[b]
-	
-	cmp eax, '+'
-	jnz sub
-	add ebx,ecx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	
-	jmp final
-sub:
-	cmp eax,'-'
-	jnz mult
-	mov edx,ecx
-	sub ebx,ecx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	jmp final
-
-mult:
-	cmp eax,'*'
-	jnz div
-	imul ebx,ecx
-	mov edx,ebx
-	mov [a],ebx
-	call res
-	mov edx,[a]
-	call imprimeInt
-	jmp final
-
-div:
-	xor eax,eax
-	mov eax,ebx
-	xor edx, edx
+	mov eax,[a]
+	mov ecx,esi
+	xor edx,edx
 	idiv ecx
-	mov [a],edx		;resto em a
-	mov [b],eax		;resposta
-	call res
-	mov edx,[b]
-	call imprimeInt
-	call dbg
-	call rest
-	mov edx,[a]
-	call imprimeInt
+	cmp edx,0
+	je notPrime
+	inc esi
+	jmp loop
+
+
+prime:
+	mov eax,sys_write
+	mov ebx,stdout
+	mov ecx, primo
+	mov edx, primo_len
+	int 0x80
+	jmp final
+	
+notPrime:
+	mov eax,sys_write
+	mov ebx,stdout
+	mov ecx, notprimo
+	mov edx, notprimo_len
+	int 0x80
 	jmp final
 
+	
+	
 read:
 	xor ecx, ecx
 	mov eax, sys_read
@@ -157,30 +132,6 @@ loopIntToStr2:
 	jne loopIntToStr2
 ret
 
-dbg:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,debug
-	mov edx,debug_len
-	int 0x80
-ret
-
-res:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,resultado
-	mov edx, res_len
-	int 0x80
-ret
-
-rest:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,resto
-	mov edx, resto_len
-	int 0x80
-ret
-	
 final:
 	mov eax,1
 	mov ebx,0
