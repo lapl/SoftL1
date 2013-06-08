@@ -15,10 +15,14 @@ maior:	db'Maior'
 maior_len:	equ $-maior
 menor:	db'Menor'
 menor_len:	equ $-menor
+debug:	db'Debug',10
+debug_len:	equ $-debug
+newline: db 10
+newline_len:	 equ $-newline
 
 	SECTION .bss
 
-num:	resb 5
+num:	resb 20
 string:	resb 5
 a: resb 5
 b: resb 5
@@ -68,44 +72,42 @@ read:
 	mov eax, sys_read
 	mov ebx, stdin
 	mov ecx, num
-	mov edx, 6
+	mov edx, 21
 	int 0x80
 ret
 	
 strToInt:
-	mov esi, 0
+	xor esi,esi
 	xor ebx, ebx
 	xor eax, eax
 	call loopstrToInt1
-	xor edx, edx
-	mov ecx, 1
-	call loopstrToInt2
-	mov [a], edx
+	mov [a],edx
 	inc ebx
+	xor esi,esi
+	xor eax,eax
 	call loopstrToInt1
-	xor edx, edx
-	mov ecx, 1
-	call loopstrToInt2
-	mov [b], edx
+	mov[b],edx
 	inc ebx
+	xor esi,esi
+	xor eax,eax
 	call loopstrToInt1
-	xor edx, edx
-	mov ecx, 1
-	call loopstrToInt2
-	mov [c], edx
+	mov[c],edx
 ret
 	
 loopstrToInt1:
 	mov al, [num+ebx]
 	cmp eax, 40
-	jl acaba
+	jl parte2
 	sub eax, '0'
 	push eax
 	inc esi
 	inc ebx
 	jmp loopstrToInt1
-	acaba:
-ret
+
+	
+parte2:
+	xor edx, edx
+	mov ecx, 1
 
 loopstrToInt2:
 	pop eax
@@ -121,3 +123,51 @@ final:
 	mov eax,1
 	mov ebx,0
 	int 0x80
+
+
+imprimeInt:
+	mov eax,edx		;guarda o inteiro
+	xor esi,esi 		;tamanho
+
+	mov ecx,10		;divisor
+Str1:
+	xor edx,edx		;resto
+	idiv ecx		;eax = eax/ecx, edx = eax%ecx
+	push edx
+	inc esi
+	cmp eax,0
+	jne Str1
+
+Str2:
+	xor eax,eax
+	pop eax
+	add eax,'0'
+	mov [string], eax
+
+	;; imprime
+	mov eax,sys_write
+	mov ebx,stdout
+	mov ecx, string
+	mov edx, 1
+	int 0x80
+	
+	dec esi
+	cmp esi,0
+	jne Str2
+ret
+
+DBG:
+	mov eax,sys_write
+	mov ebx,stdout
+	mov ecx,debug
+	mov edx,debug_len
+	int 0x80
+ret
+
+NL:
+	mov eax,sys_write
+	mov ebx,stdout
+	mov ecx,newline
+	mov edx,newline_len
+	int 0x80
+ret
