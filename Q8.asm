@@ -1,5 +1,3 @@
-
-
 ;org endereço -> ajusta todas as suas referencias à endereços. NAO RETIRAR.
 org 0x7c00 
 
@@ -8,6 +6,9 @@ org 0x7c00
 
 jmp 0x0000:start ;mais sobre segment:offset na aula do projeto do bootloader.
 
+msg db'(Programa encerrado com sucesso!)'
+len equ $-msg
+
 start:
 
 	; nunca se esqueca de zerar o ds,
@@ -15,39 +16,42 @@ start:
 	; dados utilizados no programa.
 	xor ax, ax
 	mov ds, ax
+
 	;Início do seu código
 
-	xor cx,cx
-read:	
+
+	xor bx,bx
+
+read:
 	mov ah, 0h
 	int 16h
-	push ax
-	inc cx
-	cmp al,13
+	cmp al,17
 	je fim
 	cmp al,8
 	je remove
+	cmp al,13
+	je enter
 	mov ah,0Eh
 	int 10h
-volta:	
+volta:
 	jmp read
-
 fim:
 	mov al,10
 	mov ah,0Eh
 	int 10h
-	
-write:	
-	pop ax
+	xor bx,bx
+		
+print:
+	mov ax,[msg+ebx]
 	mov ah, 0Eh
 	int 10h
-	dec cx
-	cmp cx,0
-	jne write
+	inc bx
+	cmp bx,len
+	jne print
+
 	jmp acabou
 
 remove:
-	pop ax
 	mov ah,0Eh
 	int 10h
 	mov ax,32
@@ -56,15 +60,20 @@ remove:
 	mov ax,8
 	mov ah,0Eh
 	int 10h
-	pop ax
-	dec cx
-	dec cx
 	jmp volta
 
+enter:
+	mov ax,10
+	mov ah,0Eh
+	int 10h
+	mov ax,13
+	mov ah,0Eh
+	int 10h
+	jmp volta
+	
 acabou:	
-	
 	;Fim do seu código. 
-	
+
 
 times 510-($-$$) db 0		; preenche o resto do setor com zeros 
 dw 0xaa55					; coloca a assinatura de boot no final
