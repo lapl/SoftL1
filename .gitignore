@@ -5,3 +5,5 @@ out
 *.o
 Q[0-9]
 parser
+*.pdf
+*.bin
