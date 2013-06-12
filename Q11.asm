@@ -253,4 +253,3 @@ dw 0xaa55					; coloca a assinatura de boot no final
 							; do setor (x86 : little endian)
 
 ;seu código pode ter, no máximo, 512 bytes, do org ao dw 0xaa55
-
