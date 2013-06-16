@@ -135,12 +135,12 @@ print2:
 	jmp segunda_palavra
 	
 hexa1:
-	sub al,'a'
+	sub al,'A'
 	add al,10
 	jmp volta1
 
 hexa2:
-	sub al,'a'
+	sub al,'A'
 	add al,10
 	jmp volta2
 

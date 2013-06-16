@@ -24,24 +24,24 @@ string: resb 5
 
 _start:
 
-	mov eax, sys_read
+	mov eax, sys_read  ; leitura
 	mov ebx, stdin
 	mov ecx, string
 	mov edx, 6
 	int 0X80
 
-	mov edi, eax
-	dec edi
-	dec edi
-	mov esi, [ecx+edi]
-	sub esi, '0'
-	and esi, 1
+	mov edi, eax     ; eax contem o tamanho da string
+	dec edi			 ; decrementamos duas vezes por causa do '\n'
+	dec edi          
+	mov esi, [ecx+edi] ; pegamos o ultimo digito
+	sub esi, '0'       ; transformamos em inteiro
+	and esi, 1         ; fazemos um and, se for 1 eh impar, senao eh par
 	jz even
 	jnz odd
 
 odd:
 
-	mov ecx, impar
+	mov ecx, impar        ; imprime
 	mov eax, sys_write
 	mov ebx, stdout
 	mov edx, len_impar
@@ -50,7 +50,7 @@ odd:
 
 even:
 
-	mov ecx, par
+	mov ecx, par          ; imprime 
 	mov eax, sys_write
 	mov ebx, stdout
 	mov edx, len_par

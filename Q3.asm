@@ -16,23 +16,23 @@ string: resb 20
 	global _start
 
 _start:
-	mov eax, sys_read
+	mov eax, sys_read   ; leitura
 	mov ebx, stdin
 	mov ecx, string
-	mov edx, 21 		;21 por causa do \n
+	mov edx, 21 		; 21 por causa do \n
 	int 0X80
 
 	mov edi, 1
 
-imprime:
+imprime:                 ; loop para escrever 
 	mov eax, sys_write
 	mov ebx, stdout
 	int 0X80
 	
 	inc edi
-	cmp byte[ecx+edi], 0
-	jnz imprime
-	jmp final
+	cmp byte[ecx+edi], 0 ; loop acontecera ate que proxima posicao da string
+	jnz imprime 		 ; seja 0. quando isso acontecer, a string acabou.
+	jmp final			 ; se nao imprime mais, pula para o fim do programa.
 
 final:
 	mov eax, 1 

@@ -36,43 +36,43 @@ _start:
 	xor esi, esi
 	call init
 main:
-	call read
+	call read  ; metodo para leitura
 	push esi
-	call strToInt
-	pop esi
-	xor eax, eax
-	mov eax, [a]
-	dec eax
-	xor ebx, ebx
-	mov ebx, [b]
+	call strToInt ; transformando string que contem proximo movimento em inteiro.
+	pop esi       ; posicao x esta em [a] e y em [b]
+	xor eax, eax  
+	mov eax, [a]  ; o tabuleiro eh uma string de 9 posicoes que vai de 0 ate 8.
+	dec eax       ; por isso, as operacoes feitas abaixo trasnformam o input
+	xor ebx, ebx  ; na casa apropriada do tabuleiro. A operacao feita eh 
+	mov ebx, [b]  ; (x-1)*3+(y-1)
 	dec ebx
 	imul eax, 3
 	add eax, ebx
-	cmp byte[tabuleiro+eax], '.'
-	jne jog_invalida
-	xor ecx, ecx
-	mov ecx, esi
+	cmp byte[tabuleiro+eax], '.' ; o tabuleiro eh inicializado com '.' em todas
+	jne jog_invalida             ; as posicoes. por isso, se tiver algo diferente
+	xor ecx, ecx                 ; de '.' em alguma posicao que acabou de ser 
+	mov ecx, esi                 ; jogada, a jogada eh invalida.
 	and ecx, 1
 	jnz par
-	mov byte[tabuleiro+eax], 'X'
-	jmp continua
+	mov byte[tabuleiro+eax], 'X' ; caso contrario, identificamos qual eh o jogador
+	jmp continua				 ; atual posicionamos no tabuleiro
 par:
-	mov byte[tabuleiro+eax], 'O'
+	mov byte[tabuleiro+eax], 'O' 
 continua:
 	push esi
-	call imprime_tab
-	call verifical1
-	call verifical2
-	call verifical3
+	call imprime_tab  ; apos cada jogada, imprimimos o tabuleiro
+	call verifical1   ; fazemos a verificacao de se o jogo ja acabou
+	call verifical2   ; a verificacao eh feita por linha, depois por coluna
+	call verifical3   ; e finalmente por diagonais.
 	call verificac1
 	call verificac2
 	call verificac3
 	call verificad1
 	call verificad2
 	pop esi
-	inc esi
-	cmp esi, 9
-	jne main
+	inc esi           ; esi conta quantas jogadas validas foram executadas
+	cmp esi, 9        ; caso ja tenham sido executadas 9 jogadas e o ninguem venceu
+	jne main          ; nas verificacoes, o jogo acabou empatado.
 	mov eax, sys_write
 	mov ebx, stdout
 	mov ecx, empate
@@ -88,8 +88,8 @@ jog_invalida:
 	int 0X80
 	jmp main
 	
-imprime_tab:
-	xor esi, esi
+imprime_tab:      ; para imprimir o tabuleiro, fazemos dois loops, um para cada 
+	xor esi, esi  ; linha, e dentro desse, imprimir todas as colunas correspodentes
 faz1:
 	xor edi, edi
 	call faz2
@@ -119,9 +119,9 @@ faz2:
 	int 0X80
 ret
 
-verifical1:
-	xor edi, edi
-loop11:
+verifical1:      ; a verificacao para as linhas eh feita somando +1 no contador
+	xor edi, edi ; para ver se as posicoes horizontalmente consecutivas estao 
+loop11:          ; marcadas primeiro com 'X' e depois com 'O'.
 	cmp byte[tabuleiro+edi], 'X'
 	jne acabaj11
 	inc edi
@@ -216,9 +216,9 @@ loop32:
 acaba3:
 ret	
 
-verificac1:
-	xor edi, edi
-loopc11:
+verificac1:       ; para a verificacao para as colunas, somamos 3, pois isso faz
+	xor edi, edi  ; nos pularmos para a linha de baixo. Assim, checamos posicoes
+loopc11:          ; consecutivas verticalmente. Primeiro para 'X' e depois para 'O'
 	cmp byte[tabuleiro+edi], 'X'
 	jne acabac11
 	add edi, 3
@@ -313,8 +313,8 @@ loopc32:
 acabac3:
 ret
 
-verificad1:
-	xor edi, edi
+verificad1:          ; o primeiro metodo de diagonal comeca na posicao 0 e vai 
+	xor edi, edi     ; somando 4, verificando primeiro para 'X' e depois 'O'
 loopd11:
 	cmp byte[tabuleiro+edi], 'X'
 	jne acabad11
@@ -344,8 +344,8 @@ loopd12:
 acabad1:
 ret
 
-verificad2:
-	xor edi, edi
+verificad2:      ; O segundo, comeca na posicao 2 e vai somando 2, assim 
+	xor edi, edi ; conseguimos acessar a segunda diagonal.
 	mov edi, 2
 loopd21:
 	cmp byte[tabuleiro+edi], 'X'
@@ -395,7 +395,7 @@ loopinit:
 	xor edi, edi
 ret
 	
-strToInt:
+strToInt:      ; parser
 	xor esi,esi
 	xor ebx, ebx
 	xor eax, eax

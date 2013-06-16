@@ -31,33 +31,33 @@ op:	resb 5
 
 _start:
 
-	call read
-	call strToInt
-	mov [a],edx
+	call read    ; metodo de leitura
+	call strToInt ; transformamos para inteiro e transferimos
+	mov [a],edx   ; o valor para [a]
 
-	call read
+	call read     ; mesma coisa, e trasnferimos o valor para [b]
 	call strToInt
 	mov [b],edx
 	
-	call read
+	call read    ; metodo de leitura, trasferimos o resultado para [num]
 
-	mov al,[num]
+	mov al,[num] 
 
 	xor ebx,ebx
 	xor ecx,ecx
-	mov ebx,[a]
-	mov ecx,[b]
+	mov ebx,[a]  ; trasferimos as variaves para os registradores
+	mov ecx,[b]  ; para poder operar.
 	
-	cmp eax, '+'
-	jnz sub
-	add ebx,ecx
-	mov [a],ebx
+	cmp eax, '+' ; comparamos a ultima string recebida ate achar qual
+	jnz sub      ; operacao foi realizada
+	add ebx,ecx  ; no caso da soma, somamos e imprimimos apos passar de volta
+	mov [a],ebx  ; pra string
 	call res
 	mov edx,[a]
 	call imprimeInt
 	
 	jmp final
-sub:
+sub:            ; no caso da subtracao, procedimento semelhante.
 	cmp eax,'-'
 	jnz mult
 	mov edx,ecx
@@ -68,7 +68,7 @@ sub:
 	call imprimeInt
 	jmp final
 
-mult:
+mult:          ; assim como no caso da multiplicacao
 	cmp eax,'*'
 	jnz div
 	imul ebx,ecx
@@ -79,9 +79,9 @@ mult:
 	call imprimeInt
 	jmp final
 
-div:
-	xor eax,eax
-	mov eax,ebx
+div:      ; no caso da divisao, o resta fica em edx e o quociente em eax
+	xor eax,eax  ; temos que imprimir os dois, e com uma quebra de linha no meio.
+	mov eax,ebx  ; eh o que faz o metodo 'dbg'
 	xor edx, edx
 	idiv ecx
 	mov [a],edx		;resto em a
@@ -104,7 +104,7 @@ read:
 	int 0x80
 ret
 
-strToInt:
+strToInt:  ; parser
 	xor ebx,ebx
 	xor esi,esi
 	xor edx,edx

@@ -8,7 +8,10 @@ jmp 0x0000:start ;mais sobre segment:offset na aula do projeto do bootloader.
 
 Palavras db'typeracerisaquitenicegame'
 tam db'!*,-26:'
+deacuracia db' de acuracia'
+voceteve db'Voce teve '
 string:	resb 20
+total:	resw 4
 
 start:
 
@@ -19,6 +22,7 @@ start:
 	mov ds, ax
 
 	;Início do seu código
+	mov word[total],0
 	xor bx,bx		;bx eh o indice da palavra
 print_phrase:
 	cmp bx,0
@@ -116,14 +120,28 @@ erro:
 	xor dx, dx
 	imul ax, 1000
 	div di
+	add [total],ax
+	mov cx, ax
+	call print_seta
 	call print2
+	push bx
+	xor bx,bx
+	call print_de_acuracia
+	pop bx
 	jmp cont
 bla:
 	mov ax,dx
 	xor dx, dx
 	imul ax, 1000
 	div cx
+	add [total],ax
+	mov cx, ax
+	call print_seta
 	call print2
+	push bx
+	xor bx,bx
+	call print_de_acuracia
+	pop bx
 cont:	
 	mov al,10
 	call print
@@ -140,13 +158,15 @@ print:
 	mov ah,0Eh
 	int 10h
 ret
+
+print_seta:
+	mov al,'='
+	call print
+	mov al,'>'
+	call print
+ret
 	
 print2:
-	mov cx, ax
-	mov al, '>'
-	call print
-	mov al, '='
-	call print
 	mov al, ' '
 	call print
 	xor ax, ax
@@ -154,6 +174,7 @@ print2:
 	xor si, si
 	xor cx, cx
 	mov cx, 10
+
 puxapilha:
 	xor dx, dx
 	div cx
@@ -176,8 +197,35 @@ continua:
 	mov al, '%'
 	call print
 ret	
+
+print_voce_teve:
+	mov al,[voceteve+bx]
+	call print
+	inc bx
+	cmp bx,9
+	jne print_voce_teve
+ret
+
+print_de_acuracia:
+	mov al,[deacuracia+bx]
+	call print
+	inc bx
+	cmp bx,12
+	jne print_de_acuracia
+ret
 	
 fim:
+	xor bx,bx
+	call print_voce_teve
+	mov ax,[total]		
+	xor dx,dx
+	xor di,di
+	add di,6		;total de palavras
+	div di
+	mov cx,ax
+	call print2
+	xor bx,bx
+	call print_de_acuracia
 	;Fim do seu código. 
 	
 

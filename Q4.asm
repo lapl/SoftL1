@@ -48,31 +48,31 @@ b: resb 5
 
 _start:
 	
-	call read
-	call strToInt
-	mov eax, [a]
+	call read     ; chamando metodo de leitura
+	call strToInt ; parser de string pra inteiro, guarda dia em [a] e mes em [b]
+	mov eax, [a]  ; move para registrador pra realizar operacoes
 	mov ebx, [b]
-	cmp ebx, 1
-	jne mes1
-	cmp eax, 20
-	jg mes0_1
+	cmp ebx, 1    ; sao feitas varias comparacoes para identificar qual 
+	jne mes1      ; eh o signo certo. cada label tem um if e um jump 
+	cmp eax, 20   ; para identificar se estamos no lugar certo
+	jg mes0_1     ; caso isso aconteca, podemos imprimir o signo resultante
 	mov eax, sys_write
 	mov ebx, stdout
 	mov ecx, capricornio
 	mov edx, capricornio_len
 	int 0X80
 	jmp final
-mes0_1:
+mes0_1:          ; as labels foram separadas por meses, para simplificar
 	mov eax, sys_write
 	mov ebx, stdout
 	mov ecx, aquario
 	mov edx, aquario_len
 	int 0X80
 	jmp final
-mes1:
-	cmp ebx, 2
-	jne mes2
-	cmp eax, 19
+mes1:            ; como cada mes conta com 2 signos, cada label se divide 
+	cmp ebx, 2   ; em duas sublabels, uma para cada signo. asim que acharmos
+	jne mes2     ; a label correta, imprimimos e pulamos para o fim.
+	cmp eax, 19  ; o codigo eh assim ate o final.
 	jg mes1_1
 	mov eax, sys_write
 	mov ebx, stdout
