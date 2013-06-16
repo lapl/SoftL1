@@ -31,7 +31,7 @@ imprime:                 ; loop para escrever
 	
 	inc edi
 	cmp byte[ecx+edi], 0 ; loop acontecera ate que proxima posicao da string
-	jnz imprime 		 ; seja 0. quando isso acontecer, a string acabou.
+	jnz imprime 		 ; nao seja 0. quando isso acontecer, a string acabou.
 	jmp final			 ; se nao imprime mais, pula para o fim do programa.
 
 final:

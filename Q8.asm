@@ -21,22 +21,25 @@ start:
 
 
 	xor bx,bx
-
+	;; Suporta as operaçoes de inserção, deleção na mesma linha e quebra de linha
 read:
 	mov ah, 0h
 	int 16h
-	cmp al,17
+	cmp al,17		;se for ctrl+Q entao acabou
 	je fim
-	cmp al,8
+	cmp al,8		;se for backspace removemos
 	je remove
-	cmp al,13
+	cmp al,13		;se for enter quebramos a linha
 	je enter
-	mov ah,0Eh
+	mov ah,0Eh		;se nao, so escrevemos o digitado
 	int 10h
 volta:
-	jmp read
-fim:
-	mov al,10
+	jmp read		;continuamos lendo
+fim:				 
+	mov al,10		;quebramos a linha e voltamos o cursor, para depois exibir a mensagem exigida
+	mov ah,0Eh
+	int 10h
+	mov al,13
 	mov ah,0Eh
 	int 10h
 	xor bx,bx
@@ -51,6 +54,7 @@ print:
 
 	jmp acabou
 
+	;; Voltamos o cursor, imprimimos um espaço, dps voltamos o cursor.
 remove:
 	mov ah,0Eh
 	int 10h
@@ -62,6 +66,7 @@ remove:
 	int 10h
 	jmp volta
 
+	;; quebra a linha e volta pro começo da linha
 enter:
 	mov ax,10
 	mov ah,0Eh

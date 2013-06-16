@@ -6,6 +6,9 @@ org 0x7c00
 
 jmp 0x0000:start ;mais sobre segment:offset na aula do projeto do bootloader.
 
+	;; A explicação do porquê desses strings e como eles funcionam eh a mesma da questao 10.
+	;; A diferença eh que precisamos de mais 2 porque so temos caracteres imprimiveis ate 126,
+	;; o que faz com que nao caiba em um tam so
 Nomes db'BlackBlueGreenCyanRedMagentaBrownLightGrayDarkGrayLightBlueLightGreenLightCyanLightRed'
 tam db'!&*/36=BKS\fow'
 Nomes_2 db'LightMagentaYellowWhite'
@@ -20,7 +23,9 @@ start:
 	mov ds, ax	
 	
 	; Início do seu código
-	mov dx, 0 ; Set cursor to top left-most corner of screen
+
+	;; Codigo para limpar a tela
+	mov dx, 0 ; Set the cursor to top left-most corner of screen
         mov bh, 0      
         mov ah, 0x2
         int 0x10
@@ -34,15 +39,15 @@ start:
         mov bh, 0      
         mov ah, 0x2
         int 0x10
-while:	
+while:				;vai repetir enquanto as duas cores nao forem iguais
 	mov ah,0h
 	int 16h
 	mov ah,0Eh
 	int 10h
-	;; vamos ver se ta entre '1' e '9' ou entre 'a' e 'h'
+	;; vamos ver se ta entre '1' e '9' ou entre 'A' e 'H'
 	cmp al,'9'
 	jg hexa1
-	sub al, '0'
+	sub al, '0'		;se ta entre '1' e '9'eh so subtrair de '0'
 volta1:
 	
 	xor dx,dx
@@ -54,7 +59,7 @@ volta1:
 	mov ah,0Eh
 	int 10h
 
-	cmp al,'9'
+	cmp al,'9'		;pega a segunda cor e faz a mesma coisa
 	jg hexa2
 	sub al,'0'
 
@@ -62,28 +67,28 @@ volta2:
 	xor cx,cx
 	mov cl,al		;outra cor em cl
 
-	cmp dl,cl
+	cmp dl,cl		;se forem iguais, entao acabou o programa
 	je fim
 	
-	mov bl,dl		;primeira cor
-	cmp bl,12
+	mov bl,dl		;primeira cor em bl
+	cmp bl,12		;se a primeira cor for maior que 12, entao ta na outra string
 	jg outro_caso
 	push cx			;botei cor 2 na pilha
-	mov cl,[tam+bx]
+	mov cl,[tam+bx]		;começo do nome da cor
 	inc bx
-	mov dl,[tam+bx]
+	mov dl,[tam+bx]		;fim do nome da cor
 	sub dl,cl		;dl guarda o tamanho da palavra
 	dec bx
 	pop ax 			;tirei cor 2 da pilha
 	push bx
-	imul bx, 16
+	imul bx, 16		;temos que colocar em bx 16*background+foreground
 	add bx,ax
 	push ax			;bota de volta
 	push cx
 
-	mov al,32
-	mov ah,09h
-	mov cx,dx
+	mov al,32		;imprimos espaços em branco
+	mov ah,09h		;pra pintar com cor
+	mov cx,dx		;o tamanho estava em dx
 	int 10h
 
 	pop cx
@@ -100,10 +105,10 @@ print1:
 	jne print1
 	jmp segunda_palavra
 
-outro_caso:
+outro_caso:			;eh a mesma coisa, so muda onde olhar e as contas algumas pequenas modificaçoes
 	push cx			;botei cor 2 na pilha
 	push bx
-	sub bl,13
+	sub bl,13		;começa de 13 pq de 0 a 12 ta na outra string
 	mov cl,[tam_2+bx]
 	inc bx
 	mov dl,[tam_2+bx]
@@ -135,6 +140,7 @@ print2:
 	jmp segunda_palavra
 	
 hexa1:
+	;; no caso maior que '9' subtraimos de 'A' depois somamos com 10. Entao A = 10, B = 11, ..., F = 15
 	sub al,'A'
 	add al,10
 	jmp volta1
@@ -144,7 +150,7 @@ hexa2:
 	add al,10
 	jmp volta2
 
-segunda_palavra:
+segunda_palavra:		;a mesma coisa q foi feita para a primeira cor, mas para a segunda
 
 	pop cx 			;segunda cor
 	mov al,cl
@@ -237,7 +243,7 @@ print4:
 
 	jmp next
 next:
-	mov al,10
+	mov al,10		;quebra a linha e volta o cursor pro começo da linha
 	mov ah,0Eh
 	int 10h
 	mov al,13

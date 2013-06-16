@@ -33,20 +33,20 @@ c: resb 5
 	global _start:
 
 _start:
-	call read
-	call strToInt
-	xor ebx, ebx
-	mov ebx, [a]
-	xor ecx, ecx
+	call read   ; a operacao de leitura
+	call strToInt ; todos os numeros na mesma linha, chamamos esse metodo
+	xor ebx, ebx  ; e ele guarda os numeros em [a], [b] e [c]
+	mov ebx, [a]  ; abaixo, movemos as variaveis para os registrados, para
+	xor ecx, ecx  ; podermos operar.
 	mov ecx, [b]
 	xor edx, edx
 	mov edx, [c]
-	add ebx, ecx
+	add ebx, ecx  ; somamos [a] e [b].
 	cmp ebx, edx
-	je foi_igual
-	jl foi_menor
-	mov eax, sys_write
-	mov ebx, stdout
+	je foi_igual  ; se [a]+[b] foi igual a c, pulamos para a label 
+	jl foi_menor  ; e imprimimos que foi igual. Caso foi menor, tambem pulamos
+	mov eax, sys_write ; e imprimimos. Caso nenhum dos dois aconteca. eh maior.
+	mov ebx, stdout    ; imprimimos aqui mesmo.
 	mov ecx, maior
 	mov edx, maior_len
 	int 0X80
@@ -76,8 +76,8 @@ read:
 	int 0x80
 ret
 	
-strToInt:
-	xor esi,esi
+strToInt:  ; parser cada loopstrToInt1 eh responsavel por ler um numero
+	xor esi,esi ; ate achar um espaco
 	xor ebx, ebx
 	xor eax, eax
 	call loopstrToInt1
@@ -96,10 +96,10 @@ ret
 	
 loopstrToInt1:
 	mov al, [num+ebx]
-	cmp eax, 40
+	cmp eax, 40		;sabemos que nao eh mais um algarismo do numero, entao podemos parar
 	jl parte2
 	sub eax, '0'
-	push eax
+	push eax		;vamos colocando na pilha
 	inc esi
 	inc ebx
 	jmp loopstrToInt1
@@ -109,9 +109,12 @@ parte2:
 	xor edx, edx
 	mov ecx, 1
 
+	;; unidades*1+dezenas*10+centenas*100...
+	;; ecx = 1,10,100,...
+	;; o algarismo vem da pilha
 loopstrToInt2:
 	pop eax
-	imul eax, ecx
+	imul eax, ecx		
 	add edx, eax
 	imul ecx, 10
 	dec esi
@@ -123,51 +126,3 @@ final:
 	mov eax,1
 	mov ebx,0
 	int 0x80
-
-
-imprimeInt:
-	mov eax,edx		;guarda o inteiro
-	xor esi,esi 		;tamanho
-
-	mov ecx,10		;divisor
-Str1:
-	xor edx,edx		;resto
-	idiv ecx		;eax = eax/ecx, edx = eax%ecx
-	push edx
-	inc esi
-	cmp eax,0
-	jne Str1
-
-Str2:
-	xor eax,eax
-	pop eax
-	add eax,'0'
-	mov [string], eax
-
-	;; imprime
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx, string
-	mov edx, 1
-	int 0x80
-	
-	dec esi
-	cmp esi,0
-	jne Str2
-ret
-
-DBG:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,debug
-	mov edx,debug_len
-	int 0x80
-ret
-
-NL:
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx,newline
-	mov edx,newline_len
-	int 0x80
-ret

@@ -275,6 +275,7 @@ read:
 	int 0x80
 ret
 
+	;; Conforme explicado na Q1
 strToInt:
 	xor esi,esi
 	xor ebx, ebx

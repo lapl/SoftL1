@@ -6,12 +6,18 @@ org 0x7c00
 
 jmp 0x0000:start ;mais sobre segment:offset na aula do projeto do bootloader.
 
+	;;A string Palavras guarda a concatenação das palavras do jogo.
+	;;O string tam serve para saber onde as palavras presentes em Palavras
+	;; começam e onde terminam. Supondo que queremos a terceira palavra,
+	;; temos que ela começa em Palavras[tam[2]-tam[0]] e termina em Palavras[tam[3]-tam[0]]
+	;; Para formar a string tam, começamos do caractere '!' que representa o início,
+	;; e temos que tam[i]=tam[i-1]+tamanho_palavra. e.g. '!'+len(typeracer) = '!'+9='*'
 Palavras db'typeracerisaquitenicegame'
 tam db'!*,-26:'
 deacuracia db' de acuracia'
 voceteve db'Voce teve '
-string:	resb 20
-total:	resw 4
+string:	resb 20			;palavra digitada
+total:	resw 1			;acumulador da porcentagem de acertos
 
 start:
 
@@ -22,11 +28,11 @@ start:
 	mov ds, ax
 
 	;Início do seu código
-	mov word[total],0
+	mov word[total],0	
 	xor bx,bx		;bx eh o indice da palavra
 print_phrase:
 	cmp bx,0
-	je not_space
+	je not_space		;se for a primeira palavra nao imprime o espaco
 	mov al,' '
 	call print
 not_space:	
@@ -39,29 +45,29 @@ not_space:
 	sub cl,dl		;cl guarda o tamanho
 	sub dl,'!'		;dl onde começa
 	add cl,dl		;cl onde termina
-	push bx			;guarda bx na pilha
+	push bx			;guarda o indice das palavras na pilha
 	mov bl,dl
-printoso:
+print_palavra_texto:
 	mov al,[Palavras+bx]
 	call print
 	inc bx
 	cmp bx,cx
-	jne printoso
-	pop bx			;pega bx de volta
+	jne print_palavra_texto
+	pop bx			;pega o indice das palavras de volta
 	inc bx
 	cmp bx,6		;qtd de palavras
 	jne print_phrase
 
-	mov al,10
+	mov al,10		;quebra linha e volta pro inicio da linha
 	call print
 	mov al,13
 	call print
 	xor bx,bx
 
 game:
-	push bx			;bota contador
+	push bx			;guarda o indice das palavras
 	xor bx,bx
-get_word:
+get_word:			;pega a palavra digitada pelo usuario
 	xor ax,ax
 	mov ah,0h
 	int 16h
@@ -74,15 +80,15 @@ get_word:
 	dec cx
 	mov di,cx			;tamanho de string
 	xor bx,bx
-print_word:
+print_palavra_usuario:
 	mov al,[string+bx]
 	call print
 	inc bx
 	cmp cx,bx
-	jne print_word
+	jne print_palavra_usuario
 
 	;; calcular acuracia
-	pop bx
+	pop bx			;pega o indice das palavras de volta, ja que precisa para poder calcular acuracia
 	xor dx,dx
 	xor cx,cx
 	mov dl,[tam+bx]
@@ -93,16 +99,16 @@ print_word:
 	push cx			;tamanho na pilha
 	sub dl,'!'		;dl onde começa
 	add cl,dl		;cl onde termina
-	push bx			;bota contador na pilha
+	push bx			;bota indice das palavras na pilha
 	mov si,dx		;contador na string de Palavras
 	xor bx,bx		;contador na string digitada
 	xor dx,dx		;acertos
 
 compara:
 	mov al,[Palavras+si]
-	cmp al,[string+bx]
+	cmp al,[string+bx]	;compara palavra esperada com palavra digitada
 	jne erro
-	inc dx
+	inc dx			;se acertou, entao aumenta o numero de acertos
 erro:	
 	inc si
 	inc bx
@@ -112,15 +118,17 @@ erro:
 	mov al,' '
 	call print
 	pop bx
-	pop cx
+	pop cx			;queremos pegar o tamanho da palavra digitada para poder comparar com o da esperada
 	push bx
 	cmp cx, di
-	jg bla
+	;; a acuracia sera acertos/max(len(digitada),len(esperada). Isso porque da uma acuracia 100% num caso como:
+	;; palavra desejada: soft. palavra digitada: software. seria sem sentido. Sendo assim precisamos saber qual a maior
+	jg bla		
 	mov ax, dx
 	xor dx, dx
-	imul ax, 1000
-	div di
-	add [total],ax
+	imul ax, 1000		;multiplicamos por 1000 para nao precisar trabalhar com double
+	div di			;divide por di, porque di eh maior
+	add [total],ax		;adiciona ao acumulador a acuracia dessa palavra
 	mov cx, ax
 	call print_seta
 	call print2
@@ -129,12 +137,12 @@ erro:
 	call print_de_acuracia
 	pop bx
 	jmp cont
-bla:
+bla:				;palavra digitada foi maior que a palavra esperada
 	mov ax,dx
 	xor dx, dx
 	imul ax, 1000
-	div cx
-	add [total],ax
+	div cx			;divide por cx, porque cx eh maior
+	add [total],ax		;adiciona ao acumulador a acuracia dessa palavra
 	mov cx, ax
 	call print_seta
 	call print2
@@ -167,7 +175,7 @@ print_seta:
 ret
 	
 print2:
-	mov al, ' '
+	mov al, ' ' ; primeiro imprimimos um espaco para distanciar da palavra digitada
 	call print
 	xor ax, ax
 	mov ax, cx
@@ -175,27 +183,27 @@ print2:
 	xor cx, cx
 	mov cx, 10
 
-puxapilha:
-	xor dx, dx
-	div cx
-	push dx
+puxapilha:     ; o procedimento seguinte transforma o resultado da acuracia
+	xor dx, dx ; em string, para pudermos imprimir. o resto da divisao vai 
+	div cx     ; para dx, e o quociente para ax. botamos na pilha e guardamos
+	push dx    ; quantos caracteres sao em si.
 	inc si
 	cmp ax, 0
 	jne puxapilha
 imprime:
-	pop ax
-	add ax, '0'
-	call print
+	pop ax     ; depois de acabado o procedimento, eh so ir tirando os numeros
+	add ax, '0' ; da pilha, e ir somando '0' para trasformar no caractere
+	call print  ; correspondente. Assim, imprimimos caractere por caractere.
 	dec si
-	cmp si, 1
+	cmp si, 1   ; se tiver faltando apenas 1 depois desse, então coloca uma virgula
 	jne continua
 	mov al, ','
 	call print
 continua:
 	cmp si, 0
 	jne imprime
-	mov al, '%'
-	call print
+	mov al, '%'  ; impressao do simbolo de porcentagem depois que o resultado
+	call print   ; foi impresso
 ret	
 
 print_voce_teve:
@@ -217,10 +225,11 @@ ret
 fim:
 	xor bx,bx
 	call print_voce_teve
-	mov ax,[total]		
+	mov ax,[total]	
 	xor dx,dx
 	xor di,di
-	add di,6		;total de palavras
+	;; o metodo utilizado para calcular a acuracia foi a media aritmetica entre as acuracias das palavras
+	add di,6		;total de palavras. se mudar as palavras tem que mudar isso daqui
 	div di
 	mov cx,ax
 	call print2

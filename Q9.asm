@@ -17,6 +17,9 @@ start:
 	mov ds, ax
 	;Início do seu código
 
+	;; Pegamos a entrada do usuario e colocamos numa pilha, guardando tambem o tamanho.
+	;; Para imprimir tiramos da pilha e imprimos. Isso ja vai reverter a string
+	;; Implementamos tambem a opção de usar backspace.
 	xor cx,cx
 read:	
 	mov ah, 0h
@@ -24,8 +27,8 @@ read:
 	push ax
 	inc cx
 	cmp al,13
-	je fim
-	cmp al,8
+	je fim			;se for Enter entao acabou de ler
+	cmp al,8		;se for backspace vamos tratar de forma diferente
 	je remove
 	mov ah,0Eh
 	int 10h
@@ -46,6 +49,9 @@ write:
 	jne write
 	jmp acabou
 
+	;; quando eh backspace precisamos primeiro tirar o proprio backspace da pilha, e reduzir cx. Depois voltamos o cursor,
+	;; imprimimos um espaço, e voltamos o cursor novamente. Checamos se a pilha nao esta vazia, e caso nao esteja, reduzimos
+	;; cx e tiramos o topo da pilha
 remove:
 	pop ax
 	mov ah,0Eh
@@ -56,8 +62,10 @@ remove:
 	mov ax,8
 	mov ah,0Eh
 	int 10h
-	pop ax
 	dec cx
+	cmp cx,0
+	je volta
+	pop ax
 	dec cx
 	jmp volta
 

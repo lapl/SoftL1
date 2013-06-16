@@ -9,8 +9,8 @@ stderr          equ     3
 
 	SECTION .data
 
-debug:	db 10
-debug_len:	equ $-debug
+newline:	db 10
+newline_len:	equ $-newline
 resultado:	db'Resultado: '
 res_len:	equ $-resultado
 resto:	db'Resto: '
@@ -89,7 +89,7 @@ div:      ; no caso da divisao, o resta fica em edx e o quociente em eax
 	call res
 	mov edx,[b]
 	call imprimeInt
-	call dbg
+	call NL
 	call rest
 	mov edx,[a]
 	call imprimeInt
@@ -157,11 +157,11 @@ loopIntToStr2:
 	jne loopIntToStr2
 ret
 
-dbg:
+NL:				;funcao pra imprimir uma nova linha
 	mov eax,sys_write
 	mov ebx,stdout
-	mov ecx,debug
-	mov edx,debug_len
+	mov ecx,newline
+	mov edx,newline_len
 	int 0x80
 ret
 

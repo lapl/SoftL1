@@ -29,16 +29,18 @@ _start:
 	call strToInt
 	mov [a],edx
 
+	;; 0 e 1 nao sao primos
 	cmp edx,0
 	je notPrime
 	cmp edx,1
 	je notPrime
-	
+
+	;; Vamos fazer um loop de 2 ate sqrt(n), e ve se ha algum divisor, se nao tiver, sabemos que eh primo
 	mov esi, 2
 
 loop:
 	mov ecx,esi
-	imul ecx,ecx
+	imul ecx,ecx		;ao inves de fazermos i < sqrt(n), fazemos i*i<n
 	cmp ecx,[a]
 	jg prime
 
@@ -46,7 +48,7 @@ loop:
 	mov ecx,esi
 	xor edx,edx
 	idiv ecx
-	cmp edx,0
+	cmp edx,0		;se o resto for zero, entao eh divisivel
 	je notPrime
 	inc esi
 	jmp loop
@@ -101,36 +103,6 @@ loopstrToInt:
 	jne loopstrToInt
 ret
 
-imprimeInt:
-	mov eax,edx		;guarda o inteiro
-	xor esi,esi 		;tamanho
-
-	mov ecx,10		;divisor
-loopIntToStr1:
-	xor edx,edx		;resto
-	idiv ecx		;eax = eax/ecx, edx = eax%ecx
-	push edx
-	inc esi
-	cmp eax,0
-	jne loopIntToStr1
-
-loopIntToStr2:
-	xor eax,eax
-	pop eax
-	add eax,'0'
-	mov [string], eax
-
-	;; imprime
-	mov eax,sys_write
-	mov ebx,stdout
-	mov ecx, string
-	mov edx, 1
-	int 0x80
-	
-	dec esi
-	cmp esi,0
-	jne loopIntToStr2
-ret
 
 final:
 	mov eax,1
